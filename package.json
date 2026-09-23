@@ -1,0 +1,11 @@
+{
+  "name": "escucha-mvp",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "mobile": "npm run start -w @escucha/mobile",
+    "api": "npm run dev -w @escucha/api",
+    "typecheck": "npm run typecheck -w @escucha/mobile",
+    "test": "npm run test -w @escucha/api"
+  }
+}

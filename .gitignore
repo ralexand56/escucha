@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+.expo/
+dist/
+.env
+*.log
+apps/api/data/audio/*
+!apps/api/data/audio/.gitkeep

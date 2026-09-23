@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Escucha",
+    "slug": "escucha",
+    "scheme": "escucha",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Escucha uses the microphone only when you record a Spanish shadowing attempt."
+        }
+      ]
+    ],
+    "experiments": { "typedRoutes": true },
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#F3F0E8" } }
+  }
+}
