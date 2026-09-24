@@ -4,6 +4,7 @@ import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { evaluateTranscript, generateLesson, synthesizeSpeech, transcribeAudio } from "./openai.mjs";
+import { combineWav } from "./wav.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const audioDir = join(here, "..", "data", "audio");
@@ -47,9 +48,9 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "GET" && url.pathname.startsWith("/audio/")) {
       const fileName = url.pathname.slice("/audio/".length);
-      if (!/^[a-f0-9-]+\.mp3$/.test(fileName)) return json(response, 404, { message: "Audio not found." });
+      if (!/^[a-f0-9-]+\.wav$/.test(fileName)) return json(response, 404, { message: "Audio not found." });
       const bytes = await readFile(join(audioDir, fileName));
-      response.writeHead(200, { "Content-Type": "audio/mpeg", "Cache-Control": "private, max-age=86400" });
+      response.writeHead(200, { "Content-Type": "audio/wav", "Cache-Control": "private, max-age=86400" });
       return response.end(bytes);
     }
 
@@ -59,16 +60,20 @@ const server = createServer(async (request, response) => {
       const topic = typeof body.topic === "string" && body.topic.trim() ? body.topic.trim().slice(0, 80) : "ordering at a café";
       const lesson = await generateLesson({ level, topic });
       const origin = `${url.protocol}//${request.headers.host}`;
-      const lessonFileName = `${randomUUID()}.mp3`;
-      await writeFile(
-        join(audioDir, lessonFileName),
-        await synthesizeSpeech(lesson.sentences.map((sentence) => sentence.spanish).join(" "))
+      const voices = {
+        A: process.env.OPENAI_TTS_VOICE_A || "coral",
+        B: process.env.OPENAI_TTS_VOICE_B || "onyx"
+      };
+      const sentenceAudio = await Promise.all(
+        lesson.sentences.map((sentence) => synthesizeSpeech(sentence.spanish, voices[sentence.speaker]))
       );
       const sentences = await Promise.all(lesson.sentences.map(async (sentence, index) => {
-        const fileName = `${randomUUID()}.mp3`;
-        await writeFile(join(audioDir, fileName), await synthesizeSpeech(sentence.spanish));
+        const fileName = `${randomUUID()}.wav`;
+        await writeFile(join(audioDir, fileName), sentenceAudio[index]);
         return { ...sentence, id: `sentence-${index + 1}`, audioUrl: `${origin}/audio/${fileName}` };
       }));
+      const lessonFileName = `${randomUUID()}.wav`;
+      await writeFile(join(audioDir, lessonFileName), combineWav(sentenceAudio));
       return json(response, 201, {
         ...lesson,
         id: randomUUID(),

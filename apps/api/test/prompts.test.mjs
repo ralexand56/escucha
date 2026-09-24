@@ -6,6 +6,8 @@ test("lesson prompt includes selected constraints", () => {
   const prompt = lessonPrompt({ level: "B1", topic: "catching a train" });
   assert.match(prompt, /B1/);
   assert.match(prompt, /catching a train/);
+  assert.match(prompt, /two-person conversation/);
+  assert.match(prompt, /Both people must speak at least twice/);
 });
 
 test("evaluation prompt safely quotes learner text", () => {

@@ -42,16 +42,16 @@ export function generateLesson(input) {
   return structuredResponse({ input: lessonPrompt(input), schema: lessonSchema, name: "spanish_lesson" });
 }
 
-export async function synthesizeSpeech(text) {
+export async function synthesizeSpeech(text, voice = "coral") {
   const response = await openai("/audio/speech", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts",
-      voice: "coral",
+      voice,
       input: text,
       instructions: "Speak in clear, natural Latin American Spanish at a friendly conversational pace.",
-      response_format: "mp3"
+      response_format: "wav"
     })
   });
   return Buffer.from(await response.arrayBuffer());

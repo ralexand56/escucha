@@ -11,18 +11,18 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@expo/ui": "latest",
-    "expo": "latest",
-    "expo-audio": "latest",
-    "expo-constants": "latest",
-    "expo-router": "latest",
-    "expo-status-bar": "latest",
-    "react": "latest",
-    "react-native": "latest",
-    "react-native-safe-area-context": "latest"
+    "@expo/ui": "~57.0.19",
+    "expo": "~57.0.24",
+    "expo-audio": "~57.0.5",
+    "expo-constants": "~57.0.19",
+    "expo-router": "~57.0.22",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0"
   },
   "devDependencies": {
-    "@types/react": "latest",
-    "typescript": "latest"
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3"
   }
 }

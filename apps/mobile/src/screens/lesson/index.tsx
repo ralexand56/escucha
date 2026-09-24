@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { ActionButton } from "@/components/action-button";
 import { AudioButton } from "@/components/audio-button";
 import { ProgressSteps } from "@/components/progress-steps";
@@ -41,18 +41,21 @@ export function LessonScreen() {
 
   if (!lesson) {
     return (
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 20, gap: 22 }}>
-        <View style={{ gap: 8 }}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={{ padding: 20, paddingBottom: 44, gap: 28 }}>
+        <View style={{ gap: 10 }}>
+          <Text selectable style={{ color: colors.accent, fontSize: 13, fontWeight: "800", letterSpacing: 0.8, textTransform: "uppercase" }}>
+            5-minute listening practice
+          </Text>
           <Text selectable style={{ fontSize: 30, lineHeight: 36, fontWeight: "800", color: colors.text }}>
-            Train your ear, one scene at a time.
+            What do you want to practice?
           </Text>
           <Text selectable style={{ fontSize: 17, lineHeight: 24, color: colors.secondaryText }}>
-            Listen first. Read only when you’re ready. Then shadow a native-paced sentence and get focused feedback.
+            Choose a level and a real-life scene. We’ll build a short Spanish lesson for you.
           </Text>
         </View>
 
-        <ChoiceGroup title="Your level" values={levels} selected={level} onSelect={(value) => setLevel(value as Level)} />
-        <ChoiceGroup title="Today’s scene" values={topics} selected={topic} onSelect={setTopic} />
+        <ChoiceGroup title="1 · Your level" values={levels} selected={level} onSelect={(value) => setLevel(value as Level)} compact />
+        <ChoiceGroup title="2 · Choose a scene" values={topics} selected={topic} onSelect={setTopic} />
 
         {error ? (
           <View style={{ padding: 16, gap: 6, borderRadius: 16, borderCurve: "continuous", backgroundColor: colors.surface }}>
@@ -61,17 +64,27 @@ export function LessonScreen() {
           </View>
         ) : null}
 
-        {loading ? (
-          <View style={{ padding: 28, gap: 12, alignItems: "center" }}>
-            <ActivityIndicator />
-            <Text selectable style={{ color: colors.secondaryText }}>Writing and voicing your lesson…</Text>
+        <View style={{ padding: 18, gap: 12, borderRadius: 20, borderCurve: "continuous", backgroundColor: colors.surface, boxShadow: "0 4px 18px rgba(0,0,0,0.08)" }}>
+          <View style={{ gap: 3 }}>
+            <Text selectable style={{ color: colors.text, fontSize: 18, fontWeight: "800" }}>
+              Ready for your {level} lesson?
+            </Text>
+            <Text selectable style={{ color: colors.secondaryText, fontSize: 14, lineHeight: 20 }}>
+              {sentenceCase(topic)} · about 5 minutes
+            </Text>
           </View>
-        ) : (
-          <ActionButton label={error ? "Try again" : "Create my lesson"} onPress={loadLesson} />
-        )}
-        <Text selectable style={{ fontSize: 12, lineHeight: 17, color: colors.secondaryText }}>
-          Audio is AI-generated. Your recording is sent to your private server for transcription and feedback.
-        </Text>
+          {loading ? (
+            <View style={{ minHeight: 56, gap: 10, alignItems: "center", justifyContent: "center" }}>
+              <ActivityIndicator />
+              <Text selectable style={{ color: colors.secondaryText }}>Writing and voicing your lesson…</Text>
+            </View>
+          ) : (
+            <ActionButton label={error ? "Try again" : "Start this lesson  →"} onPress={loadLesson} />
+          )}
+          <Text selectable style={{ fontSize: 12, lineHeight: 17, color: colors.secondaryText }}>
+            AI-generated audio · Your recordings stay on your private server.
+          </Text>
+        </View>
       </ScrollView>
     );
   }
@@ -116,6 +129,9 @@ export function LessonScreen() {
 
       {step === 5 ? (
         <LessonCard eyebrow={`Sentence ${shadowIndex + 1} of ${lesson.sentences.length}`} title="Listen, then repeat the sentence aloud.">
+          <Text selectable style={{ color: colors.accent, fontSize: 13, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.6 }}>
+            {lesson.speakers[currentSentence.speaker]}
+          </Text>
           <Text selectable style={{ color: colors.text, fontSize: 22, lineHeight: 30, fontWeight: "700" }}>
             {currentSentence.spanish}
           </Text>
@@ -138,19 +154,56 @@ export function LessonScreen() {
   );
 }
 
-function ChoiceGroup({ title, values, selected, onSelect }: { title: string; values: readonly string[]; selected: string; onSelect: (value: string) => void }) {
+function ChoiceGroup({ title, values, selected, onSelect, compact = false }: { title: string; values: readonly string[]; selected: string; onSelect: (value: string) => void; compact?: boolean }) {
   return (
     <View style={{ gap: 10 }}>
       <Text selectable style={{ color: colors.text, fontSize: 17, fontWeight: "700" }}>{title}</Text>
-      <View style={{ gap: 8 }}>
-        {values.map((value) => (
-          <View key={value} style={{ padding: 4, borderWidth: selected === value ? 2 : 1, borderColor: selected === value ? colors.accent : colors.border, borderRadius: 14, borderCurve: "continuous", backgroundColor: selected === value ? colors.accentSoft : colors.surface }}>
-            <ActionButton label={value} onPress={() => onSelect(value)} />
-          </View>
-        ))}
+      <View style={{ gap: 8, flexDirection: compact ? "row" : "column", flexWrap: compact ? "wrap" : "nowrap" }}>
+        {values.map((value) => {
+          const isSelected = selected === value;
+
+          return (
+            <Pressable
+              key={value}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: isSelected }}
+              onPress={() => onSelect(value)}
+              style={({ pressed }) => ({
+                minHeight: compact ? 44 : 54,
+                minWidth: compact ? 64 : undefined,
+                flexGrow: compact ? 1 : 0,
+                paddingHorizontal: compact ? 15 : 16,
+                paddingVertical: compact ? 10 : 14,
+                borderWidth: isSelected ? 2 : 1,
+                borderColor: isSelected ? colors.accent : colors.border,
+                borderRadius: 14,
+                borderCurve: "continuous",
+                backgroundColor: isSelected ? colors.accentSoft : colors.surface,
+                opacity: pressed ? 0.72 : 1,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12
+              })}
+            >
+              <Text style={{ flex: compact ? 0 : 1, color: colors.text, fontSize: 16, fontWeight: isSelected ? "700" : "600", textAlign: compact ? "center" : "left" }}>
+                {compact ? value : sentenceCase(value)}
+              </Text>
+              {isSelected ? (
+                <Text accessibilityElementsHidden style={{ color: colors.accent, fontSize: 16, fontWeight: "800" }}>
+                  {compact ? "✓" : "Selected  ✓"}
+                </Text>
+              ) : null}
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
+}
+
+function sentenceCase(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function LessonCard({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) {
@@ -170,6 +223,9 @@ function Transcript({ lesson, withAudio, showTranslation }: { lesson: Lesson; wi
     <View style={{ gap: 18 }}>
       {lesson.sentences.map((sentence, index) => (
         <View key={sentence.id} style={{ gap: 6, paddingBottom: 16, borderBottomWidth: index === lesson.sentences.length - 1 ? 0 : 1, borderBottomColor: colors.border }}>
+          <Text selectable style={{ color: colors.accent, fontSize: 12, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.6 }}>
+            {lesson.speakers[sentence.speaker]}
+          </Text>
           <Text selectable style={{ color: colors.text, fontSize: 18, lineHeight: 26, fontWeight: "600" }}>{sentence.spanish}</Text>
           {showTranslation ? <Text selectable style={{ color: colors.secondaryText }}>{sentence.english}</Text> : null}
           {withAudio ? <AudioButton uri={sentence.audioUrl} label={`Play sentence ${index + 1}`} /> : null}

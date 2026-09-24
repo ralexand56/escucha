@@ -2,6 +2,7 @@ export type Level = "A1" | "A2" | "B1" | "B2";
 
 export type LessonSentence = {
   id: string;
+  speaker: "A" | "B";
   spanish: string;
   english: string;
   tip: string;
@@ -13,6 +14,7 @@ export type Lesson = {
   title: string;
   topic: string;
   level: Level;
+  speakers: Record<"A" | "B", string>;
   audioUrl: string;
   sentences: LessonSentence[];
 };
